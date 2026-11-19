@@ -358,10 +358,12 @@ def detect_api_requirements(item_path: Path, cwd_path: Optional[Path] = None, is
                 presence[k] = True
 
     key_entries = [{"key": k, "configured": bool(presence.get(k, False))} for k in declared]
-    missing = sum(1 for entry in key_entries if not entry["configured"])
+    configured = sum(1 for entry in key_entries if entry["configured"])
+    missing = len(key_entries) - configured
     return {
         "needs_api": True,
         "all_configured": missing == 0,
+        "configured_count": configured,
         "missing_count": missing,
         "keys": key_entries,
         "env_file": str(item_path / ".env"),
@@ -835,9 +837,15 @@ def api_open_folder(req: LaunchRequest):
             target = match.get("path") or match.get("cwd")
     if target and Path(target).exists():
         p = Path(target)
-        folder = str(p if p.is_dir() else p.parent)
+        folder = os.path.normpath(str(p if p.is_dir() else p.parent))
         if os.name == "nt":
-            os.startfile(folder)
+            try:
+                subprocess.Popen(
+                    ["explorer.exe", folder],
+                    creationflags=subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP,
+                )
+            except Exception:
+                os.startfile(folder)
         elif sys.platform == "darwin":
             subprocess.Popen(["open", folder])
         else:

@@ -191,10 +191,12 @@
         const statusTxt = isSkill ? (item.active ? 'Active Skill' : 'Archived') : item.status.replace('_', ' ');
         const gBadge = item.graphify && item.graphify.connections ? `<span class="badge graph">${item.graphify.connections} links</span>` : '';
         const api = item.api || {};
+        const cfgCount = api.configured_count || 0;
+        const totalKeys = (api.keys || []).length;
         const apiBadge = api.needs_api
-          ? `<span class="badge ${api.all_configured ? 'api-ok' : 'api-miss'}">${api.all_configured ? 'API Ready' : `Needs API (${api.missing_count})`}</span>`
+          ? `<span class="badge ${cfgCount > 0 ? 'api-ok' : 'api-miss'}">${api.all_configured ? 'API Ready' : (cfgCount > 0 ? `API Set (${cfgCount}/${totalKeys})` : `APIs (${totalKeys} opt)`)}</span>`
           : '';
-        const apiBtnLabel = api.needs_api ? (api.all_configured ? 'API Ready' : 'Setup API') : 'API';
+        const apiBtnLabel = api.needs_api ? 'API Keys' : 'API';
 
         return `
           <div class="card">
@@ -233,8 +235,8 @@
       apiModalIdx = idx;
       const item = itemsById[idx];
       const api = item.api || { keys: [], env_file: '' };
-      document.getElementById('apiModalTitle').textContent = `API Setup — ${item.name}`;
-      document.getElementById('apiModalSub').textContent = `Saves locally to ${api.env_file || '.env'} and injects automatically on launch (existing values stay hidden).`;
+      document.getElementById('apiModalTitle').textContent = `API Keys — ${item.name}`;
+      document.getElementById('apiModalSub').textContent = `Saves locally to ${api.env_file || '.env'} and injects automatically on launch. Only add keys for providers you plan to use.`;
       document.getElementById('customKeyName').value = '';
       document.getElementById('customKeyVal').value = '';
 
@@ -293,12 +295,8 @@
       if (andLaunch) launchItem(idx, true);
     }
 
-    async function launchItem(idx, skipApiCheck = false) {
+    async function launchItem(idx) {
       const item = itemsById[idx];
-      if (!skipApiCheck && item.api && item.api.needs_api && !item.api.all_configured) {
-        openApiModal(idx, true);
-        return;
-      }
       toast('Launching ' + item.name + '...');
       const res = await fetch('/api/launch', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: item.id }) });
       const data = await res.json();
