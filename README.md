@@ -1,6 +1,6 @@
 # Antigravity Hub
 
-A lightweight, config-driven local dashboard to discover, annotate, launch, and monitor local repositories, apps, and agent skills — with optional [Graphify](https://github.com/JuliusBrussee/graphify) knowledge-graph integration.
+A lightweight, config-driven local dashboard to discover, annotate, launch, and monitor local repositories, apps, and agent skills — with optional [Graphify](https://github.com/Graphify-Labs/graphify) knowledge-graph integration.
 
 ## Screenshots
 
