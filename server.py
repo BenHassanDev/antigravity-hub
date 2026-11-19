@@ -36,7 +36,7 @@ def load_config() -> Dict[str, Any]:
     target = CONFIG_FILE if CONFIG_FILE.exists() else EXAMPLE_CONFIG_FILE
     if target.exists():
         try:
-            return json.loads(target.read_text(encoding="utf-8"))
+            return json.loads(target.read_text(encoding="utf-8-sig"))
         except Exception:
             pass
     return {

@@ -2,6 +2,14 @@
 
 A lightweight, config-driven local dashboard to discover, annotate, launch, and monitor local repositories, apps, and agent skills — with optional [Graphify](https://github.com/JuliusBrussee/graphify) knowledge-graph integration.
 
+## Screenshots
+
+### Multi-Drive Workspace & API Status Dashboard
+![Antigravity Hub Dashboard](docs/dashboard.png)
+
+### Masked Pre-Launch `.env` API Key Setup
+![Antigravity Hub API Keys Modal](docs/api-keys-modal.png)
+
 ## Features
 
 - **Automatic Multi-Drive Discovery (`"auto"`)**: Dynamically scans mounted drives on Windows (`C:`–`Z:`), macOS (`/Volumes/*`, `~`), and Linux (`/mnt`, `/media`, `~`) for common workspace folders (`Antigravity`, `Projects`, `Dev`, `Repos`, `Code`, `Work`) plus any custom `workspace_roots` in `hub.config.json` — skipping `node_modules` and `.venv`.
