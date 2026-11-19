@@ -372,6 +372,12 @@ def detect_api_requirements(item_path: Path, cwd_path: Optional[Path] = None, is
 
 def _collect_launch_env(item_path: Optional[Path], cwd_path: Optional[Path]) -> Dict[str, str]:
     env = os.environ.copy()
+    env["PYTHONUNBUFFERED"] = "1"
+    if os.name == "nt":
+        env["NODE_OPTIONS"] = (env.get("NODE_OPTIONS", "") + " --use-system-ca").strip()
+        git_usr = r"C:\Program Files\Git\usr\bin"
+        if os.path.isdir(git_usr) and git_usr.lower() not in env.get("PATH", "").lower():
+            env["PATH"] = git_usr + os.pathsep + env.get("PATH", "")
     candidates = [APP_DIR / ".env"]
     if item_path and item_path.exists():
         candidates.extend([item_path / ".env", item_path / ".env.local"])
@@ -619,27 +625,33 @@ def build_inventory() -> Dict[str, Any]:
     }
 
 
+_ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
+
+
 def _stream_proc_output(item_id: str, proc: subprocess.Popen) -> None:
     url_opened = False
     buf = RUNNING_PROCS[item_id]["logs"]
     try:
         assert proc.stdout is not None
         for line in proc.stdout:
-            clean = line.rstrip("\r\n")
+            clean = _ANSI_RE.sub("", line.rstrip("\r\n"))
             buf.append(clean)
-            m = re.search(r"(https?://(?:localhost|127\.0\.0\.1|0\.0\.0\.0):\d+[^\s]*)", clean)
+            m = re.search(r"(https?://(?:localhost|127\.0\.0\.1|0\.0\.0\.0):\d+[^\s\"'<>)\]]*)", clean)
             if m:
                 found_url = m.group(1).replace("0.0.0.0", "127.0.0.1")
                 configured = RUNNING_PROCS[item_id].get("url")
                 sub_path = RUNNING_PROCS[item_id].get("sub_path", "")
-                if configured:
+                has_token = ("?token=" in found_url or "/open?key=" in found_url)
+                if has_token:
+                    target_url = found_url
+                elif configured:
                     target_url = configured
                 elif sub_path and not found_url.rstrip("/").endswith(sub_path.rstrip("/")):
                     target_url = found_url.rstrip("/") + sub_path
                 else:
                     target_url = found_url
                 RUNNING_PROCS[item_id]["url"] = target_url
-                if not url_opened:
+                if not url_opened or has_token:
                     url_opened = True
                     try:
                         webbrowser.open(target_url)

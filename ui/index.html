@@ -303,6 +303,8 @@
       if (!res.ok || data.ok === false) { toast('Error: ' + (data.error || data.detail || 'Launch failed')); openLogs(idx); return; }
       toast(`Started ${item.name}` + (data.pid ? ` (PID ${data.pid})` : ''));
       setTimeout(loadInventory, 900);
+      setTimeout(loadInventory, 2800);
+      setTimeout(loadInventory, 6000);
     }
 
     async function stopItem(idx) {
