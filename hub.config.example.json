@@ -1,0 +1,16 @@
+{
+  "port": 8787,
+  "host": "127.0.0.1",
+  "workspace_roots": [
+    "auto"
+  ],
+  "skills_dir": "~/.gemini/config/skills",
+  "master_skills_dir": "",
+  "graphify_json": "../graphify-out/graph.json",
+  "graphify_html": "../graphify-out/graph.html",
+  "excluded_names": [
+    "antigravity-hub-template",
+    "antigravity-launcher"
+  ],
+  "custom_apps": []
+}

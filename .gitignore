@@ -1,0 +1,14 @@
+# Local configuration & user notes (do not commit personal paths)
+hub.config.json
+comments.json
+
+# Python / OS artifacts
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.log
+.DS_Store
+Thumbs.db

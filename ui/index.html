@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Antigravity Hub — Local Apps &amp; Skills Launcher</title>
+  <style>
+    :root {
+      --bg: #0b1020; --surface: #121a2e; --card: #17213b; --border: #263559;
+      --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8;
+      --green: #22c55e; --amber: #f59e0b; --red: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; min-height: 100vh; }
+    header { position: sticky; top: 0; z-index: 20; background: rgba(11,16,32,0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 14px 24px; }
+    .top-row { max-width: 1400px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+    .brand h1 { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+    .brand p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    input[type="search"] { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 8px; font-size: 13px; width: 250px; outline: none; }
+    input[type="search"]:focus { border-color: var(--accent); }
+    button { cursor: pointer; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 12px; font-weight: 600; padding: 7px 12px; transition: all 0.15s; }
+    button:hover { border-color: var(--accent); background: #1c2847; }
+    button.primary { background: #0284c7; border-color: #38bdf8; color: #fff; }
+    button.danger { background: rgba(239,68,68,0.16); border-color: var(--red); color: #fca5a5; }
+    button.success { background: rgba(34,197,94,0.18); border-color: var(--green); color: #86efac; }
+    .tabs { max-width: 1400px; margin: 14px auto 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .tab { padding: 6px 12px; border-radius: 999px; font-size: 12px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); cursor: pointer; }
+    .tab.active { background: rgba(56,189,248,0.16); border-color: var(--accent); color: #fff; }
+    main { max-width: 1400px; margin: 18px auto 40px; padding: 0 24px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+    .card:hover { border-color: #3b538a; }
+    .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .card-title { font-size: 15px; font-weight: 700; color: #f8fafc; word-break: break-word; }
+    .badges { display: flex; flex-wrap: wrap; gap: 5px; }
+    .badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); }
+    .badge.ready { color: #86efac; border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.12); }
+    .badge.running { color: #38bdf8; border-color: rgba(56,189,248,0.5); background: rgba(56,189,248,0.15); }
+    .badge.needs_setup { color: #fcd34d; border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.12); }
+    .badge.graph { color: #c4b5fd; border-color: rgba(129,140,248,0.4); background: rgba(129,140,248,0.12); }
+    .badge.api-ok { color: #86efac; border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.12); }
+    .badge.api-miss { color: #fda4af; border-color: rgba(244,63,94,0.45); background: rgba(244,63,94,0.14); }
+    .desc { font-size: 12.5px; color: #cbd5e1; line-height: 1.45; }
+    .cmd-box { font-family: ui-monospace, Consolas, monospace; font-size: 11.5px; background: #0b1020; border: 1px solid #223052; border-radius: 8px; padding: 7px 9px; color: #7dd3fc; word-break: break-all; }
+    .comment-row { display: flex; gap: 6px; align-items: center; }
+    .comment-input { flex: 1; background: #0f162a; border: 1px solid #243356; border-radius: 7px; padding: 5px 8px; font-size: 12px; color: #e2e8f0; outline: none; }
+    .card-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 4px; }
+    .drawer { position: fixed; right: 18px; bottom: 18px; width: 520px; max-width: calc(100vw - 36px); background: #0b1122; border: 1px solid var(--accent); border-radius: 14px; box-shadow: 0 20px 50px rgba(0,0,0,0.65); z-index: 50; display: none; flex-direction: column; }
+    .drawer.open { display: flex; }
+    .drawer-head { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; }
+    .drawer-body { padding: 12px; max-height: 280px; overflow-y: auto; font-family: ui-monospace, Consolas, monospace; font-size: 11.5px; color: #cbd5e1; white-space: pre-wrap; line-height: 1.4; }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(5,8,18,0.72); backdrop-filter: blur(4px); z-index: 70; display: none; align-items: center; justify-content: center; padding: 16px; }
+    .modal-backdrop.open { display: flex; }
+    .modal { width: 480px; max-width: 100%; background: var(--card); border: 1px solid var(--accent); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 24px 60px rgba(0,0,0,0.7); }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 700; }
+    .modal-sub { font-size: 12px; color: var(--muted); word-break: break-all; }
+    .api-row { display: flex; flex-direction: column; gap: 5px; background: #0f162a; border: 1px solid var(--border); border-radius: 9px; padding: 9px 10px; }
+    .api-row-top { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; font-family: ui-monospace, Consolas, monospace; }
+    .api-input { background: #0b1020; border: 1px solid #243356; border-radius: 7px; padding: 6px 9px; font-size: 12px; color: #f8fafc; outline: none; width: 100%; }
+    .api-input:focus { border-color: var(--accent); }
+    .modal-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+    .toast { position: fixed; bottom: 18px; left: 18px; background: var(--card); border: 1px solid var(--accent); padding: 10px 14px; border-radius: 10px; font-size: 12.5px; display: none; z-index: 80; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="top-row">
+      <div class="brand">
+        <h1>Antigravity Hub <span class="badge graph" id="graphBadge">Graphify: loading</span></h1>
+        <p id="summaryLine">Auto-discovers local repositories, launchable apps, and skills configured in hub.config.json.</p>
+      </div>
+      <div class="actions">
+        <input type="search" id="searchInput" placeholder="Search apps, skills, or comments..." />
+        <button id="rescanBtn">Rescan</button>
+        <button id="graphUpdateBtn">Update Graphify</button>
+      </div>
+    </div>
+    <div class="tabs" id="tabs"></div>
+  </header>
+
+  <main><div class="grid" id="grid"></div></main>
+
+  <div class="drawer" id="logDrawer">
+    <div class="drawer-head"><span id="logTitle">Logs</span><button onclick="closeLogs()">Close</button></div>
+    <div class="drawer-body" id="logBody"></div>
+  </div>
+  <div class="modal-backdrop" id="apiModal">
+    <div class="modal">
+      <div class="modal-head">
+        <span id="apiModalTitle">Configure API Keys</span>
+        <button onclick="closeApiModal()">Close</button>
+      </div>
+      <div class="modal-sub" id="apiModalSub"></div>
+      <div id="apiRows" style="display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto;"></div>
+      <div class="api-row">
+        <div class="api-row-top"><span>Add Custom Env Key (optional)</span></div>
+        <div style="display:flex;gap:6px;">
+          <input class="api-input" id="customKeyName" placeholder="ENV_VAR_NAME (e.g. OPENAI_API_KEY)" />
+          <input class="api-input" id="customKeyVal" type="password" autocomplete="off" placeholder="Secret value..." />
+        </div>
+      </div>
+      <div class="modal-foot" id="apiModalFoot"></div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let inventory = { repos: [], stubs: [], skills: [], graphify_nodes: 0 };
+    let itemsById = {};
+    let activeTab = 'All Launchable';
+    let logPoll = null;
+    let activeLogId = null;
+
+    const TAB_NAMES = ['All Launchable', 'Ready Now', 'Running', 'Web & Apps', 'Python & CLI', 'Skills Board', 'Excluded'];
+
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.style.display = 'block';
+      clearTimeout(el._t);
+      el._t = setTimeout(() => el.style.display = 'none', 2800);
+    }
+
+    async function loadInventory() {
+      const res = await fetch('/api/inventory');
+      inventory = await res.json();
+      document.getElementById('graphBadge').textContent = `Graphify: ${inventory.graphify_nodes} indexed`;
+      const readyCount = inventory.repos.filter(r => r.status === 'ready').length;
+      const runCount = inventory.repos.filter(r => r.status === 'running').length;
+      const activeSkills = inventory.skills.filter(s => s.active).length;
+      const rootCount = (inventory.roots || []).length;
+      document.getElementById('summaryLine').textContent =
+        `${rootCount} root(s) scanned · ${inventory.repos.length} launchable repos (${readyCount} ready, ${runCount} running) · ${activeSkills}/${inventory.skills.length} skills · ${inventory.stubs.length} excluded`;
+      renderTabs();
+      renderGrid();
+    }
+
+    function renderTabs() {
+      const counts = {
+        'All Launchable': inventory.repos.length,
+        'Ready Now': inventory.repos.filter(r => r.status === 'ready').length,
+        'Running': inventory.repos.filter(r => r.status === 'running').length,
+        'Web & Apps': inventory.repos.filter(r => r.category === 'Web & Apps').length,
+        'Python & CLI': inventory.repos.filter(r => r.category === 'Python & CLI').length,
+        'Skills Board': inventory.skills.length,
+        'Excluded': inventory.stubs.length,
+      };
+      document.getElementById('tabs').innerHTML = TAB_NAMES.map(t =>
+        `<div class="tab ${activeTab === t ? 'active' : ''}" onclick="setTab('${t}')">${t} (${counts[t] || 0})</div>`
+      ).join('');
+    }
+
+    function setTab(t) { activeTab = t; renderTabs(); renderGrid(); }
+    function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    function renderGrid() {
+      const q = document.getElementById('searchInput').value.trim().toLowerCase();
+      let list = [];
+      if (activeTab === 'Skills Board') list = inventory.skills;
+      else if (activeTab === 'Excluded') list = inventory.stubs;
+      else {
+        list = inventory.repos.filter(r => {
+          if (activeTab === 'Ready Now') return r.status === 'ready';
+          if (activeTab === 'Running') return r.status === 'running';
+          if (['Web & Apps','Python & CLI'].includes(activeTab)) return r.category === activeTab;
+          return true;
+        });
+      }
+      if (q) {
+        list = list.filter(x =>
+          (x.name || '').toLowerCase().includes(q) ||
+          (x.description || '').toLowerCase().includes(q) ||
+          (x.comment || '').toLowerCase().includes(q) ||
+          (x.command || '').toLowerCase().includes(q)
+        );
+      }
+
+      const grid = document.getElementById('grid');
+      itemsById = {};
+      if (!list.length) {
+        grid.innerHTML = `<div class="card"><div class="card-title">No matching items</div><div class="desc">Adjust hub.config.json or click Rescan.</div></div>`;
+        return;
+      }
+
+      grid.innerHTML = list.map((item, idx) => {
+        itemsById[idx] = item;
+        const isSkill = item.kind === 'skill';
+        const isStub = item.kind === 'stub';
+        const statusCls = isSkill ? (item.active ? 'ready' : 'needs_setup') : item.status;
+        const statusTxt = isSkill ? (item.active ? 'Active Skill' : 'Archived') : item.status.replace('_', ' ');
+        const gBadge = item.graphify && item.graphify.connections ? `<span class="badge graph">${item.graphify.connections} links</span>` : '';
+        const api = item.api || {};
+        const apiBadge = api.needs_api
+          ? `<span class="badge ${api.all_configured ? 'api-ok' : 'api-miss'}">${api.all_configured ? 'API Ready' : `Needs API (${api.missing_count})`}</span>`
+          : '';
+        const apiBtnLabel = api.needs_api ? (api.all_configured ? 'API Ready' : 'Setup API') : 'API';
+
+        return `
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">${esc(item.name)}</div>
+              <div class="badges">
+                <span class="badge">${esc(item.location)}</span>
+                <span class="badge ${statusCls}">${esc(statusTxt)}</span>
+                ${apiBadge}
+                ${gBadge}
+              </div>
+            </div>
+            <div class="desc">${esc(item.description)}</div>
+            ${item.command ? `<div class="cmd-box">${esc(item.command)}</div>` : ''}
+            <div class="comment-row">
+              <input class="comment-input" id="c-${idx}" value="${esc(item.comment)}" placeholder="Add your note or comment..." />
+              <button onclick="saveComment(${idx})">Save</button>
+            </div>
+            <div class="card-actions">
+              ${(!isStub && item.command) ? `<button class="primary" onclick="launchItem(${idx})">Launch</button>` : ''}
+              ${item.status === 'running' ? `<button class="danger" onclick="stopItem(${idx})">Stop</button>` : ''}
+              ${item.url ? `<button class="success" onclick="openUrl(${idx})">Open UI</button>` : ''}
+              ${(!isStub && !isSkill) ? `<button onclick="openLogs(${idx})">Logs</button>` : ''}
+              ${!isStub ? `<button onclick="openApiModal(${idx})">${apiBtnLabel}</button>` : ''}
+              ${(isSkill && item.can_toggle) ? `<button onclick="toggleSkill(${idx})">${item.active ? 'Disable Link' : 'Enable Link'}</button>` : ''}
+              <button onclick="openFolder(${idx})">Folder</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    let apiModalIdx = null;
+
+    function openApiModal(idx, pendingLaunch = false) {
+      apiModalIdx = idx;
+      const item = itemsById[idx];
+      const api = item.api || { keys: [], env_file: '' };
+      document.getElementById('apiModalTitle').textContent = `API Setup — ${item.name}`;
+      document.getElementById('apiModalSub').textContent = `Saves locally to ${api.env_file || '.env'} and injects automatically on launch (existing values stay hidden).`;
+      document.getElementById('customKeyName').value = '';
+      document.getElementById('customKeyVal').value = '';
+
+      const rowsEl = document.getElementById('apiRows');
+      if (api.keys && api.keys.length) {
+        rowsEl.innerHTML = api.keys.map(k => `
+          <div class="api-row">
+            <div class="api-row-top">
+              <span>${esc(k.key)}</span>
+              <span class="badge ${k.configured ? 'api-ok' : 'api-miss'}">${k.configured ? 'Configured' : 'Missing'}</span>
+            </div>
+            <input class="api-input" data-api-key="${esc(k.key)}" type="password" autocomplete="off"
+              placeholder="${k.configured ? 'Already set — enter new value only to replace' : 'Paste API key / token...'}" />
+          </div>
+        `).join('');
+      } else {
+        rowsEl.innerHTML = `<div class="modal-sub">No required API keys detected in .env.example or docs. Add any custom key below if needed.</div>`;
+      }
+
+      document.getElementById('apiModalFoot').innerHTML = pendingLaunch
+        ? `<button onclick="closeApiModal()">Cancel</button><button onclick="closeApiModal(); launchItem(${idx}, true);">Launch Anyway</button><button class="primary" onclick="saveApiConfig(true)">Save &amp; Launch</button>`
+        : `<button onclick="closeApiModal()">Cancel</button><button class="primary" onclick="saveApiConfig(false)">Save to .env</button>`;
+      document.getElementById('apiModal').classList.add('open');
+    }
+
+    function closeApiModal() {
+      apiModalIdx = null;
+      document.getElementById('apiModal').classList.remove('open');
+    }
+
+    async function saveApiConfig(andLaunch) {
+      if (apiModalIdx === null) return;
+      const idx = apiModalIdx;
+      const item = itemsById[idx];
+      const values = {};
+      document.querySelectorAll('#apiRows input[data-api-key]').forEach(inp => {
+        const val = inp.value.trim();
+        if (val) values[inp.dataset.apiKey] = val;
+      });
+      const ck = document.getElementById('customKeyName').value.trim();
+      const cv = document.getElementById('customKeyVal').value.trim();
+      if (ck && cv) values[ck] = cv;
+      if (!Object.keys(values).length) {
+        if (andLaunch) { closeApiModal(); launchItem(idx, true); return; }
+        return toast('Enter at least one key value to save.');
+      }
+      const res = await fetch('/api/configure-api', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ id: item.id, values })
+      });
+      const data = await res.json();
+      if (!res.ok) return toast('API save error: ' + (data.detail || 'Failed'));
+      toast(`Saved ${data.saved_count} key(s) locally to .env`);
+      closeApiModal();
+      await loadInventory();
+      if (andLaunch) launchItem(idx, true);
+    }
+
+    async function launchItem(idx, skipApiCheck = false) {
+      const item = itemsById[idx];
+      if (!skipApiCheck && item.api && item.api.needs_api && !item.api.all_configured) {
+        openApiModal(idx, true);
+        return;
+      }
+      toast('Launching ' + item.name + '...');
+      const res = await fetch('/api/launch', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: item.id }) });
+      const data = await res.json();
+      if (!res.ok || data.ok === false) { toast('Error: ' + (data.error || data.detail || 'Launch failed')); openLogs(idx); return; }
+      toast(`Started ${item.name}` + (data.pid ? ` (PID ${data.pid})` : ''));
+      setTimeout(loadInventory, 900);
+    }
+
+    async function stopItem(idx) {
+      const item = itemsById[idx];
+      await fetch('/api/stop', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: item.id }) });
+      toast(`Stopped ${item.name}`);
+      loadInventory();
+    }
+
+    async function openUrl(idx) {
+      const item = itemsById[idx];
+      if (item.url.startsWith('http')) window.open(item.url, '_blank');
+      else await fetch('/api/launch', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: item.id, url: item.url, launch_type: 'open_file' }) });
+    }
+
+    async function openFolder(idx) {
+      const item = itemsById[idx];
+      const res = await fetch('/api/open-folder', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: item.id, cwd: item.path }) });
+      const data = await res.json();
+      if (!res.ok) return toast('Folder error: ' + (data.detail || 'Could not open'));
+      toast('Opened folder: ' + (data.opened || item.path));
+    }
+
+    async function saveComment(idx) {
+      const item = itemsById[idx];
+      const val = document.getElementById('c-' + idx).value;
+      await fetch('/api/comment', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: item.id, comment: val }) });
+      toast('Comment saved');
+    }
+
+    async function toggleSkill(idx) {
+      const item = itemsById[idx];
+      await fetch('/api/skill-toggle', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ folder: item.folder, enable: !item.active }) });
+      loadInventory();
+    }
+
+    async function openLogs(idx) {
+      const item = itemsById[idx];
+      activeLogId = item.id;
+      document.getElementById('logTitle').textContent = `Live Logs — ${item.name}`;
+      document.getElementById('logDrawer').classList.add('open');
+      const refresh = async () => {
+        if (!activeLogId) return;
+        const r = await fetch('/api/logs?id=' + encodeURIComponent(activeLogId));
+        const d = await r.json();
+        document.getElementById('logBody').textContent = d.logs.length ? d.logs.join('\n') : '(No log output yet — click Launch first.)';
+      };
+      await refresh();
+      clearInterval(logPoll);
+      logPoll = setInterval(refresh, 1500);
+    }
+
+    function closeLogs() { activeLogId = null; clearInterval(logPoll); document.getElementById('logDrawer').classList.remove('open'); }
+    document.getElementById('searchInput').addEventListener('input', renderGrid);
+    document.getElementById('rescanBtn').addEventListener('click', () => { toast('Rescanning...'); loadInventory(); });
+    document.getElementById('graphUpdateBtn').addEventListener('click', async () => {
+      toast('Updating Graphify...');
+      const r = await fetch('/api/graphify-update', { method:'POST' });
+      const d = await r.json();
+      toast(d.ok ? 'Graphify updated!' : 'Graphify finished with warnings');
+      loadInventory();
+    });
+
+    loadInventory();
+  </script>
+</body>
+</html>
